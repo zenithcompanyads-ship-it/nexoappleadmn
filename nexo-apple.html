@@ -458,6 +458,29 @@ table.vtable td.r{text-align:right}table.vtable td.c{text-align:center}
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
 
+<!-- ══ LOGIN MODAL ══ -->
+<div class="modal-overlay" id="loginModal" style="display:flex">
+  <div class="modal" style="max-width:380px">
+    <div style="padding:32px 28px;text-align:center">
+      <div class="brand-mark" style="width:48px;height:48px;margin:0 auto 20px">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="white"/></svg>
+      </div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px">NEXO APPLE</h2>
+      <p style="font-size:11px;color:var(--hint);letter-spacing:.05em;text-transform:uppercase;margin-bottom:28px">Controle de Estoque</p>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username" class="cfg-input" style="font-size:13px;padding:10px 13px">
+        <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password" class="cfg-input" style="font-size:13px;padding:10px 13px">
+        <button class="btn btn-primary" onclick="handleLogin()" style="width:100%;padding:10px;font-weight:600;font-size:13px;background:linear-gradient(135deg,#22C991,#4A9EFF);box-shadow:0 0 20px rgba(34,201,145,.2)">
+          <svg viewBox="0 0 16 16"><path d="M2 8l4 4 8-8"/></svg>
+          Entrar
+        </button>
+        <div id="loginError" style="font-size:11px;color:var(--red);display:none;text-align:center;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ CONFIG MODAL ══ -->
 <div class="modal-overlay" id="cfgModal">
   <div class="modal">
@@ -1122,6 +1145,33 @@ function updateConnUI(){
 }
 function openCfg(){document.getElementById('cfgModal').classList.add('open')}
 function closeCfg(){document.getElementById('cfgModal').classList.remove('open')}
+
+// ── LOGIN ──
+const VALID_USER='nexo';
+const VALID_PASS='adminrudbruno';
+function handleLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+  if(user===VALID_USER&&pass===VALID_PASS){
+    sessionStorage.setItem('nx_logged',true);
+    document.getElementById('loginModal').style.display='none';
+    errEl.style.display='none';
+  }else{
+    errEl.textContent='Usuário ou senha incorretos';
+    errEl.style.display='block';
+  }
+}
+function checkLogin(){
+  if(!sessionStorage.getItem('nx_logged')){
+    document.getElementById('loginModal').style.display='flex';
+  }else{
+    document.getElementById('loginModal').style.display='none';
+  }
+}
+document.getElementById('loginPass').addEventListener('keypress',function(e){
+  if(e.key==='Enter')handleLogin();
+});
 
 // ── TOAST ──
 function toast(msg,type='info',dur=3000){
@@ -2326,6 +2376,7 @@ function resetPrices(){
   toast('Preços restaurados para os valores originais','ok');
 }
 // ── INIT ──
+checkLogin();
 loadCfg();
 updateDot();
 render();
