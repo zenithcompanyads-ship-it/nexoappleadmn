@@ -469,6 +469,22 @@ table.vtable td.r{text-align:right}table.vtable td.c{text-align:center}
 .tcard-row strong{color:var(--text);font-weight:600}
 .tcard-row svg{flex-shrink:0}
 .tcard-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+
+/* ── FORNECEDORES CARDS ── */
+.forn-group{margin-bottom:22px}
+.forn-group-head{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.forn-group-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;background:var(--surface3);color:var(--muted);border-radius:10px;font-size:10px;font-weight:700;padding:0 6px}
+.forn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:11px}
+.forn-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:7px;transition:border-color .2s,transform .2s}
+.forn-card:hover{border-color:var(--border-med);transform:translateY(-1px)}
+.forn-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.forn-card-model{font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+.forn-card-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.forn-card-price{font-size:18px;font-weight:700;color:var(--teal);letter-spacing:-.02em;line-height:1}
+.forn-card-diff{font-size:10.5px;font-weight:500}
+.forn-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:18px}
+.forn-chip{font-size:10px;font-weight:600;background:var(--surface3);color:var(--muted);border-radius:5px;padding:2px 7px}
+.forn-card-actions{display:flex;gap:6px;margin-top:3px}
 </style>
 </head>
 <body>
@@ -638,7 +654,6 @@ table.vtable td.r{text-align:right}table.vtable td.c{text-align:center}
     <button class="btn" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
       <svg id="themeIcon" viewBox="0 0 16 16"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"/><circle cx="8" cy="8" r="3"/></svg>
     </button>
-    <button class="btn" onclick="openCfg()"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>Supabase</button>
     <button class="btn" onclick="exportCSV()"><svg viewBox="0 0 16 16"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>CSV</button>
     <button class="btn" onclick="window.print()"><svg viewBox="0 0 16 16"><rect x="3" y="6" width="10" height="7" rx="1"/><path d="M5 6V3h6v3M5 10h2"/></svg></button>
   </div>
@@ -669,6 +684,11 @@ table.vtable td.r{text-align:right}table.vtable td.c{text-align:center}
             Novos / Lacrados
             <span class="ctab-count" id="ctab-count-novo">0</span>
           </button>
+          <button class="ctab" id="ctab-forn" onclick="switchCatalog('fornecedor')">
+            <svg viewBox="0 0 16 16" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M2 4h12v3H2zM3 7v6h10V7M6 10h4"/></svg>
+            Fornecedores
+            <span class="ctab-count" id="ctab-count-forn">0</span>
+          </button>
         </div>
         <div class="panel-meta" style="margin-top:6px" id="catalog-meta">Seminovos · iPhone 12 → 17 Pro Max · valores mais altos para maior margem</div>
       </div>
@@ -698,7 +718,29 @@ table.vtable td.r{text-align:right}table.vtable td.c{text-align:center}
       <th class="c" style="width:8%">Estoque</th>
       <th class="c" style="width:6%"></th>
     </tr></thead><tbody id="body"></tbody></table></div>
-    <div class="panel-foot"><span>Nexo Apple Controle · Bateria e cores variam · Garantia Apple quando disponível</span><span id="foot-date" style="font-weight:500"></span></div>
+    <div class="panel-foot" id="catFoot"><span>Nexo Apple Controle · Bateria e cores variam · Garantia Apple quando disponível</span><span id="foot-date" style="font-weight:500"></span></div>
+
+    <!-- ── VIEW FORNECEDORES ── -->
+    <div id="fornecedorView" style="display:none;padding:18px 22px">
+      <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+        <textarea class="mtextarea" id="fornText" style="flex:1;min-width:260px;min-height:80px" placeholder="Cole aqui a mensagem do fornecedor (WhatsApp)...&#10;&#10;Ex:&#10;📱*12 128GB ✅*&#10;📌Grade A R$1490 (Preto 85%)"></textarea>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-primary" onclick="analyzeForn()" style="background:linear-gradient(135deg,#2DD4BF,#4A9EFF)">
+            <svg viewBox="0 0 16 16"><path d="M2 8h3l2-5 3 10 2-5h2"/></svg>
+            Analisar e salvar
+          </button>
+          <button class="btn" onclick="document.getElementById('fornText').value=''">Limpar texto</button>
+          <button class="btn btn-red" onclick="clearForn()" style="font-size:11px">Apagar tudo</button>
+        </div>
+      </div>
+      <div class="aval-kpis" id="fornKpis" style="padding:0 0 14px;display:none"></div>
+      <div id="fornGroups"></div>
+      <div id="fornEmpty" style="padding:40px 20px;text-align:center;color:var(--muted)">
+        <svg viewBox="0 0 24 24" style="width:38px;height:38px;stroke:var(--hint);fill:none;stroke-width:1.2;margin:0 auto 12px;display:block"><path d="M3 6h18v4H3zM4 10v9h16v-9M9 14h6"/></svg>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Nenhum produto de fornecedor</div>
+        <div style="font-size:12px;margin-top:4px">Cole uma mensagem acima e clique em <strong style="color:var(--teal)">Analisar e salvar</strong></div>
+      </div>
+    </div>
   </div>
 </main>
 </div>
@@ -1246,7 +1288,7 @@ function findItemByKey(key){
 }
 function itemKey(r){ return r.custom ? ('custom:'+r.id) : sKey(r); }
 function setAll(v){items.forEach(r=>getSD(r).on=v);saveSD();updateAll()}
-function updField(r,f,v){const d=getSD(r);if(f==='price')d.price=parseFloat(v)||r.c;else d[f]=v;saveSD();pushStock(r);updateAll()}
+function updField(r,f,v){const d=getSD(r);if(f==='price')d.price=parseFloat(v)||r.c;else if(f==='frete')d.frete=(v===''?null:(parseFloat(v)||0));else d[f]=v;saveSD();pushStock(r);updateAll()}
 function updateAll(){updateDot();render();renderStock()}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function brl(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -1567,17 +1609,22 @@ function renderStock(){
   grid.innerHTML=fil.map((r,idx)=>{
     const on=isOn(r),d=getSD(r),cp=d.price||r.c;
     const k=r.m.replace(/`/g,'\\`'),ks=r.sub.replace(/`/g,'\\`');
+    const fnd=`items.find(i=>i.m===\`${k}\`&&i.sub===\`${ks}\`)`;
     const days=daysIn(r);
     let agePill='';
     if(days!==null){let[ac,tc,al]=['var(--green-dim)','var(--green)','OK'];if(days>=DANGER)[ac,tc,al]=['var(--red-dim)','var(--red)','Crítico ⚠'];else if(days>=ALERT)[ac,tc,al]=['var(--amber-dim)','var(--amber)','Atenção !'];agePill=`<span style="font-size:9.5px;font-weight:600;background:${ac};color:${tc};border-radius:4px;padding:2px 7px">${days}d · ${al}</span>`;}
     return`<div class="scard ${on?'cin':'cout'}" style="animation-delay:${idx*.025}s">
       <div class="ctop">
-        <div class="cl"><div class="cmodel">${r.m}</div><div class="csub">${r.sub}</div><div class="cbadges">${r.obs?`<span class="gb">${r.obs}</span>`:''}${agePill}</div></div>
+        <div class="cl"><div class="cmodel">${r.m}</div><div class="csub">${r.sub}</div><div class="cbadges">${(d.obs!=null?d.obs:r.obs)?`<span class="gb">${d.obs!=null?d.obs:r.obs}</span>`:''}${d.bateria?`<span class="gb" style="background:var(--green-dim);color:var(--green)">&#x1F50B; ${d.bateria}</span>`:''}${d.cor?`<span class="gb" style="background:var(--blue-dim);color:var(--blue)">${d.cor}</span>`:''}${agePill}</div></div>
         <div class="cr"><span class="cstatus ${on?'inl':'outl'}">${on?'Em estoque':'Sem estoque'}</span><button class="tog ${on?'on':'off'}" onclick="togCard(\`${k}\`,\`${ks}\`)"></button></div>
       </div>
       <div class="cfields">
-        <div class="cfrow"><span class="cflbl">Preço pago</span><input class="cfinput" type="number" step="10" min="0" value="${cp}" placeholder="${r.c}" onchange="updField(items.find(i=>i.m===\`${k}\`&&i.sub===\`${ks}\`),'price',this.value)"></div>
-        <div class="cfrow"><span class="cflbl">Entrada</span><input class="cfinput" type="date" value="${d.date||''}" max="${todayISO()}" onchange="updField(items.find(i=>i.m===\`${k}\`&&i.sub===\`${ks}\`),'date',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Preço pago</span><input class="cfinput" type="number" step="10" min="0" value="${cp}" placeholder="${r.c}" onchange="updField(${fnd},'price',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Entrada</span><input class="cfinput" type="date" value="${d.date||''}" max="${todayISO()}" onchange="updField(${fnd},'date',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Bateria</span><input class="cfinput" type="text" value="${d.bateria||''}" placeholder="ex: 92%" onchange="updField(${fnd},'bateria',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Cor</span><input class="cfinput" type="text" value="${d.cor||''}" placeholder="ex: Titânio" onchange="updField(${fnd},'cor',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Frete</span><input class="cfinput" type="number" step="10" min="0" value="${d.frete!=null?d.frete:''}" placeholder="${FRETE}" onchange="updField(${fnd},'frete',this.value)"></div>
+        <div class="cfrow"><span class="cflbl">Observação</span><input class="cfinput" type="text" value="${(d.obs!=null?d.obs:(r.obs||'')).replace(/"/g,'&quot;')}" placeholder="garantia / nota" onchange="updField(${fnd},'obs',this.value)"></div>
       </div>
       ${ageBar(r)}
     </div>`;
@@ -2266,11 +2313,18 @@ function switchCatalog(tipo){
   currentCatalog = tipo;
   document.getElementById('ctab-semi').classList.toggle('ctab-active', tipo==='seminovo');
   document.getElementById('ctab-novo').classList.toggle('ctab-active', tipo==='novo');
+  const fb=document.getElementById('ctab-forn'); if(fb) fb.classList.toggle('ctab-active', tipo==='fornecedor');
+  const isForn = tipo==='fornecedor';
+  const fv = document.getElementById('fornecedorView'); if(fv) fv.style.display = isForn?'block':'none';
+  ['.filters','.rcbar','.tw'].forEach(s=>{ const el=document.querySelector('#page-main '+s); if(el) el.style.display = isForn?'none':''; });
+  const cf=document.getElementById('catFoot'); if(cf) cf.style.display = isForn?'none':'';
   const metaEl = document.getElementById('catalog-meta');
-  if(metaEl) metaEl.textContent = tipo === 'seminovo'
+  if(metaEl) metaEl.textContent = isForn
+    ? 'Produtos enviados pelos fornecedores · organizados por modelo · adicione ao estoque com 1 clique'
+    : tipo === 'seminovo'
     ? 'Seminovos · iPhone 12 → 17 Pro Max · valores mais altos para maior margem'
     : 'Novos / Lacrados · produtos adicionados manualmente';
-  render();
+  if(isForn) renderFornCards(); else render();
 }
 
 // ── PRODUTO MODAL ──
@@ -2391,13 +2445,201 @@ function removeCustomItem(id){
   toast('Produto removido','info');
 }
 
+// ══════════════════════════════════════════
+//  FORNECEDORES — cola mensagem, organiza em cards
+// ══════════════════════════════════════════
+let fornItems = JSON.parse(localStorage.getItem('nx_forn_items') || '[]');
+function saveFornItems(){ localStorage.setItem('nx_forn_items', JSON.stringify(fornItems)); }
+
+function buildModelName(num, variant){
+  const v = variant ? ' ' + variant.replace(/\b\w/g,c=>c.toUpperCase()) : '';
+  return 'iPhone ' + num + v;
+}
+
+function parseSupplierText(raw){
+  const lines = raw.split('\n');
+  const found = [];
+  let header = null;
+  const phoneRe = /(\d{1,2}e?)\s*(pro max|pro|plus|mini)?\s*(\d+\s*(?:gb|tb))/i;
+  const priceRe = /r\$\s*([\d.,]+)/i;
+  const gradeRe = /grade\s*([a-c]\+?)/i;
+  for(const rawLine of lines){
+    const line = rawLine.trim();
+    if(!line) continue;
+    const isPriceLine = /^📌/.test(line) || (priceRe.test(line) && /grade/i.test(line));
+    if(!isPriceLine){
+      const clean = line.replace(/[*_~`✅🚨📱💻🔌🍎🚚📦🇺🇸]/g,' ').replace(/\s+/g,' ').trim();
+      const ph = clean.match(phoneRe);
+      if(ph){
+        const num = ph[1], variant = ph[2] || '';
+        const sub = ph[3].replace(/\s+/g,'').toUpperCase();
+        header = { model: buildModelName(num, variant), sub, serie: num.replace(/\D/g,'') };
+      } else if(/m\d/i.test(clean) && /(air|pro)/i.test(clean)){
+        const subM = clean.match(/(\d+\s*(?:gb|tb))(?!.*\d+\s*(?:gb|tb))/i);
+        const sub = subM ? subM[1].replace(/\s+/g,'').toUpperCase() : '';
+        header = { model: 'MacBook ' + clean.replace(/macbook/i,'').replace(/\d+\s*(?:gb|tb)\s*$/i,'').trim(), sub, serie:'mac' };
+      }
+      continue;
+    }
+    if(!header) continue;
+    const pm = line.match(priceRe);
+    if(!pm) continue;
+    const price = Math.round(parseFloat(pm[1].replace(/\./g,'').replace(',','.')));
+    if(!price) continue;
+    const gM = line.match(gradeRe);
+    const grade = gM ? gM[1].toUpperCase() : '';
+    let cor='', bateria='';
+    const par = line.match(/\(([^)]*)\)/);
+    if(par){
+      const inside = par[1];
+      const bM = inside.match(/(\d{2,3})\s*%/); if(bM) bateria = bM[1];
+      const cM = inside.match(/([A-Za-zÀ-ú]+)\s*\d{2,3}\s*%/);
+      if(cM) cor = cM[1];
+      else { const c2 = inside.match(/^\s*([A-Za-zÀ-ú]+)/); if(c2) cor = c2[1]; }
+    }
+    found.push({ model:header.model, sub:header.sub, serie:header.serie||'outro', price, grade, cor, bateria });
+  }
+  return found;
+}
+
+function compareToCatalog(f){
+  const existing = [
+    ...items.map(i=>({m:i.m,sub:i.sub,c:getPrice(i)})),
+    ...customItems.map(i=>({m:i.m,sub:i.sub,c:Number(i.c)||0}))
+  ];
+  const match = existing.find(e=> e.m.toLowerCase()===f.model.toLowerCase() && (e.sub||'').toUpperCase()===(f.sub||'').toUpperCase());
+  if(!match) return { status:'new', ref:null, diff:null };
+  const diff = f.price - match.c;
+  if(Math.abs(diff)<20) return { status:'eq', ref:match.c, diff };
+  return { status: diff>0?'up':'down', ref:match.c, diff };
+}
+
+function analyzeForn(){
+  const raw = document.getElementById('fornText').value;
+  if(!raw.trim()){ toast('Cole a mensagem do fornecedor','err'); return; }
+  const found = parseSupplierText(raw);
+  if(!found.length){ toast('Nenhum produto reconhecido','err'); return; }
+  let novos=0;
+  found.forEach(f=>{
+    const dup = fornItems.find(x=>x.model===f.model && x.sub===f.sub && x.price===f.price && x.cor===f.cor);
+    if(dup) return;
+    fornItems.unshift({ id:(Date.now()+Math.floor(Math.random()*100000)).toString(), ...f, addedAt: Date.now() });
+    novos++;
+  });
+  saveFornItems();
+  document.getElementById('fornText').value='';
+  renderFornCards();
+  updateCatalogCounts();
+  toast(novos+' produto(s) na lista de fornecedores','ok');
+}
+
+function clearForn(){
+  if(!fornItems.length) return;
+  if(!confirm('Apagar todos os produtos de fornecedores da lista?')) return;
+  fornItems=[]; saveFornItems(); renderFornCards(); updateCatalogCounts();
+  toast('Lista de fornecedores limpa','info');
+}
+
+function removeForn(id){
+  fornItems = fornItems.filter(i=>i.id!==id);
+  saveFornItems(); renderFornCards(); updateCatalogCounts();
+}
+
+function promoteFornToStock(id){
+  const f = fornItems.find(i=>i.id===id);
+  if(!f) return;
+  const cmp = compareToCatalog(f);
+  if(cmp.status!=='new'){
+    const ci = customItems.find(i=>i.m.toLowerCase()===f.model.toLowerCase() && (i.sub||'').toUpperCase()===(f.sub||'').toUpperCase());
+    if(ci){ ci.c=f.price; if(f.cor)ci.cor=f.cor; if(f.bateria)ci.bateria=f.bateria; saveCustomItems(); pushCustomItem(ci); }
+    else {
+      const ref = items.find(i=>i.m===f.model && i.sub===f.sub);
+      if(ref){ const d=getSD(ref); d.price=f.price; saveSD(); pushStock(ref); }
+    }
+    toast('Preço atualizado no catálogo','ok');
+  } else {
+    const obj = {
+      id:(Date.now()+Math.floor(Math.random()*1000)).toString(),
+      tipo:'seminovo', s:f.serie||'outro', m:f.model, sub:f.sub||'256GB',
+      c:f.price, frete:80, obs:f.grade?('Grade '+f.grade):'', bateria:f.bateria||'', cor:f.cor||'', custom:true
+    };
+    customItems.push(obj); saveCustomItems(); pushCustomItem(obj);
+    toast('Adicionado ao estoque (Seminovos)','ok');
+  }
+  removeForn(id);
+  updateAll();
+}
+
+function renderFornCards(){
+  const groupsEl = document.getElementById('fornGroups');
+  const emptyEl = document.getElementById('fornEmpty');
+  const kpisEl = document.getElementById('fornKpis');
+  if(!groupsEl) return;
+  if(!fornItems.length){
+    groupsEl.innerHTML=''; emptyEl.style.display='block'; kpisEl.style.display='none';
+    return;
+  }
+  emptyEl.style.display='none';
+  const enriched = fornItems.map(f=>({ ...f, cmp: compareToCatalog(f) }));
+  const cnt = s => enriched.filter(e=>e.cmp.status===s).length;
+  kpisEl.style.display='grid';
+  kpisEl.innerHTML = `
+    <div class="ak"><div class="ak-label">Total</div><div class="ak-val">${enriched.length}</div></div>
+    <div class="ak"><div class="ak-label">Novos</div><div class="ak-val" style="color:var(--blue)">${cnt('new')}</div></div>
+    <div class="ak"><div class="ak-label">+ Caros</div><div class="ak-val" style="color:var(--red)">${cnt('up')}</div></div>
+    <div class="ak"><div class="ak-label">+ Baratos</div><div class="ak-val" style="color:var(--green)">${cnt('down')}</div></div>`;
+  const order = ['12','13','14','15','16','17','mac','outro'];
+  const serieLabel = {12:'iPhone 12',13:'iPhone 13',14:'iPhone 14',15:'iPhone 15',16:'iPhone 16',17:'iPhone 17',mac:'MacBook',outro:'Outros'};
+  const groups = {};
+  enriched.forEach(e=>{ const k=e.serie||'outro'; (groups[k]=groups[k]||[]).push(e); });
+  const keys = Object.keys(groups).sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  const meta = {
+    new:{lbl:'Novo', cls:'dn', col:'var(--blue)'},
+    up:{lbl:'+ caro', cls:'du', col:'var(--red)'},
+    down:{lbl:'+ barato', cls:'dd', col:'var(--green)'},
+    eq:{lbl:'igual', cls:'de', col:'var(--hint)'}
+  };
+  groupsEl.innerHTML = keys.map(k=>{
+    const cards = groups[k].map(e=>{
+      const sm = meta[e.cmp.status];
+      const diffTxt = e.cmp.status==='new' ? 'Não está no catálogo'
+        : e.cmp.status==='eq' ? 'Mesmo preço'
+        : (e.cmp.diff>0?'+':'-') + brl(Math.abs(e.cmp.diff)) + ' vs ' + brl(e.cmp.ref);
+      const chips = [
+        e.grade?`<span class="forn-chip">Grade ${e.grade}</span>`:'',
+        e.cor?`<span class="forn-chip">${e.cor}</span>`:'',
+        e.bateria?`<span class="forn-chip">${e.bateria}% 🔋</span>`:''
+      ].join('');
+      return `<div class="forn-card">
+        <div class="forn-card-top">
+          <div><div class="forn-card-model">${e.model}</div><div class="forn-card-sub">${e.sub||''}</div></div>
+          <span class="db ${sm.cls}">${sm.lbl}</span>
+        </div>
+        <div class="forn-card-price">${brl(e.price)}</div>
+        <div class="forn-card-diff" style="color:${sm.col}">${diffTxt}</div>
+        <div class="forn-chips">${chips||'<span style="font-size:10.5px;color:var(--hint)">sem detalhes</span>'}</div>
+        <div class="forn-card-actions">
+          <button class="btn btn-green" style="flex:1;justify-content:center" onclick="promoteFornToStock('${e.id}')"><svg viewBox="0 0 16 16"><path d="M8 2v12M2 8h12"/></svg>Estoque</button>
+          <button class="btn" onclick="removeForn('${e.id}')" title="Remover">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="forn-group"><div class="forn-group-head">${serieLabel[k]||k} <span class="forn-group-count">${groups[k].length}</span></div><div class="forn-grid">${cards}</div></div>`;
+  }).join('');
+}
+
 function updateCatalogCounts(){
   const semiAll = getAllItems('seminovo');
   const novoAll = getAllItems('novo');
   const sc = document.getElementById('ctab-count-semi');
   const nc = document.getElementById('ctab-count-novo');
+  const fc = document.getElementById('ctab-count-forn');
   if(sc) sc.textContent = semiAll.length;
   if(nc) nc.textContent = novoAll.length;
+  if(fc) fc.textContent = fornItems.length;
 }
 
 // Modal backdrop close
@@ -2428,6 +2670,7 @@ renderHist();
 initVendas();
 renderTrocas();
 updateCatalogCounts();
+renderFornCards();
 if(isConn())setTimeout(loadFromSupabase,600);
 </script>
 </body>
