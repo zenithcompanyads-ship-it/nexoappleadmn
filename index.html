@@ -1137,8 +1137,10 @@ const items=[
 const sl={'12':'iPhone 12','13':'iPhone 13','14':'iPhone 14','15':'iPhone 15','16':'iPhone 16','17':'iPhone 17'};
 
 // ── SUPABASE CONFIG ──
+const DEFAULT_URL='https://yybmgirahytaaukbmxrr.supabase.co';
+const DEFAULT_KEY='sb_publishable_sEo7iT1gRzqnk0H90eD5GA_kPJoXhR7';
 let SB_URL='',SB_KEY='';
-function loadCfg(){SB_URL=localStorage.getItem('nx_url')||'';SB_KEY=localStorage.getItem('nx_key')||'';updateConnUI()}
+function loadCfg(){SB_URL=localStorage.getItem('nx_url')||DEFAULT_URL;SB_KEY=localStorage.getItem('nx_key')||DEFAULT_KEY;updateConnUI()}
 function saveCfg(){SB_URL=document.getElementById('cfgUrl').value.trim();SB_KEY=document.getElementById('cfgKey').value.trim();localStorage.setItem('nx_url',SB_URL);localStorage.setItem('nx_key',SB_KEY);updateConnUI();closeCfg();toast('Configurações salvas','ok')}
 function sbHeaders(){return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}
 function isConn(){return SB_URL&&SB_KEY}
